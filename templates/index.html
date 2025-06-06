@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heart Disease Risk Checker</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --color-bg: #f4f7fa;
+            --color-surface: #ffffff;
+            --color-primary: #2563eb;
+            --color-primary-dark: #1d4ed8;
+            --color-text-primary: #1f2937;
+            --color-text-secondary: #6b7280;
+            --color-border: #d1d5db;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--color-surface);
+            border-radius: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            overflow: hidden;
+            flex-direction: column;
+            md:flex-direction: row; /* This is a pseudo-class for media query */
+        }
+        @media (min-width: 768px) {
+            .container { flex-direction: row; }
+        }
+
+        .form-section {
+            padding: 2.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        @media (min-width: 768px) {
+            .form-section { width: 55%; }
+        }
+        
+        .result-section {
+            padding: 2.5rem;
+            width: 100%;
+            background-color: var(--color-primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+            min-height: 250px;
+        }
+        @media (min-width: 768px) {
+            .result-section { width: 45%; }
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        /* Form Styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .form-group .radio-group { display: flex; gap: 1rem; align-items: center; height: 100%;}
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background-color: var(--color-primary);
+            color: white;
+            font-weight: 600;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-btn:hover { background-color: var(--color-primary-dark); }
+        .submit-btn:disabled { background-color: #93c5fd; cursor: not-allowed; }
+
+        /* Result Styling */
+        .result-placeholder, .result-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .result-display .risk-value {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        .result-display .risk-label {
+            font-size: 1rem;
+            color: #dbeafe; /* Light blue */
+            margin-top: 0.5rem;
+        }
+        
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left-color: #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="form-section">
+            <h1>Heart Disease Risk</h1>
+            <p class="subtitle">Fill in the details to predict your risk.</p>
+            
+            <form id="risk-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="Age">Age</label>
+                        <input type="number" id="Age" name="Age" value="55" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="Gender" value="1" checked /> Male</label>
+                            <label><input type="radio" name="Gender" value="0" /> Female</label>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="form-group">Symptoms & Conditions</label>
+                <div class="checkbox-grid" style="margin-top: 0.5rem;">
+                    {# This Jinja2 loop populates the checkboxes from your Flask app #}
+                    {% for feature in binary_features %}
+                        {% if feature != "Gender" %}
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="{{ feature }}" value="1" />
+                            <span>{{ feature_labels[feature].replace("Do you experience ", "").replace("?", "") | replace("Do you have ", "") | title }}</span>
+                        </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <button type="submit" id="submit-button" class="submit-btn">Check My Risk</button>
+            </form>
+        </div>
+
+        <div class="result-section">
+            <div id="result-content">
+                <div class="result-placeholder">
+                    <h2 style="margin-bottom: 1rem; font-weight: 600;">Your Result</h2>
+                    <p style="color: #dbeafe;">Your risk prediction will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('risk-form');
+        const submitButton = document.getElementById('submit-button');
+        const resultContent = document.getElementById('result-content');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent the default page reload
+            
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.textContent = 'Calculating...';
+            resultContent.innerHTML = '<div class="loader"></div>';
+
+            // Collect form data into a JSON object
+            const formData = new FormData(form);
+            const data = {};
+            
+            // Initialize all binary features to 0
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                data[cb.name] = 0;
+            });
+
+            // Populate data from the form
+            for (let [key, value] of formData.entries()) {
+                // For checkboxes, the value is "1". For radio/text, it's the direct value.
+                // We need to convert to number where appropriate.
+                data[key] = Number(value);
+            }
+            
+            try {
+                // Send data to the Flask API endpoint
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // Display the result
+                resultContent.innerHTML = `
+                    <div class="result-display">
+                        <div class="risk-value">${result.risk}</div>
+                        <div class="risk-label">Estimated Risk Level</div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Prediction error:', error);
+                resultContent.innerHTML = `
+                    <div class="result-placeholder">
+                        <p style="color: #fecaca; font-weight: 500;">Error: Could not get a prediction.</p>
+                        <p style="font-size: 0.8rem; color: #fee2e2;">Please check the console for details.</p>
+                    </div>
+                `;
+            } finally {
+                // Re-enable the button
+                submitButton.disabled = false;
+                submitButton.textContent = 'Check My Risk';
+            }
+        });
+    </script>
+</body>
+</html>
