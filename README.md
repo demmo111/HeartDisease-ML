@@ -106,7 +106,14 @@ python app.py
 - Enhance the web interface with more detailed risk assessments
 - Add explanations for predictions using techniques like SHAP values
 
+## Video presentation 
+https://www.canva.com/design/DAGpm4RGlEo/u7eNfXZK6vzN173l66mW6g/edit?utm_content=DAGpm4RGlEo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
+
+## paper
+https://drive.google.com/file/d/1I8peHdf4bUo_30cbdz1A4VZuwELpm1nn/view?usp=drivesdk
+
 ## Author
 
-This project was developed by Manus AI.
+This project was developed by Mohamed Abdelkader Ragab 
 
